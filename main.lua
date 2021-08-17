@@ -2,6 +2,7 @@ enemy = {}
 enemies_controller = {}
 enemies_controller.enemies = {}
 
+
 function checkCollisions(enemies, bullets)
 	for i,e in pairs(enemies) do 
 		for _,b in pairs(bullets) do
@@ -13,6 +14,9 @@ function checkCollisions(enemies, bullets)
 end 
 
 function love.load()
+	game_over = false
+	game_win = false
+	background_image = love.graphics.newImage('saitaman.jpg')
 	player = {}
 	player.x = 0
 	player.y = 550
@@ -32,10 +36,15 @@ function love.load()
 			table.insert(player.bullets, bullet)
 		end
 	end
-	enemies_controller:spawnEnemy(0, 0)
-	enemies_controller:spawnEnemy(700, 0)
-	love.graphics.setDefaultFilter('nearest', 'nearest')
+	for i = 1, 5 do
+		enemies_controller:spawnEnemy(i * 100, 0)
+	end
+	-- enemies_controller:spawnEnemy(0, 0)
+	-- enemies_controller:spawnEnemy(700, 0)
+	-- love.graphics.setDefaultFilter('nearest', 'nearest')
+	
 end
+
 
 function enemies_controller:spawnEnemy(x, y)
 	enemy = {}
@@ -45,7 +54,7 @@ function enemies_controller:spawnEnemy(x, y)
 	enemy.width = 40
 	enemy.bullets = {}
 	enemy.cooldown = 200
-	enemy.speed = 0
+	enemy.speed = .5
 	table.insert(self.enemies, enemy)
 end
 
@@ -75,8 +84,15 @@ function love.update(dt)
 			player.fire()
 	end
 
+	if #enemies_controller.enemies == 0 then
+		game_win = true
+	end
+
 	for _,e in pairs(enemies_controller.enemies) do
-		e.y = e.y + 1
+		if e.y >= love.graphics.getHeight() - enemy.height then
+			game_over = true
+		end
+		e.y = e.y + enemy.speed
 	end
 
 	for i,b in ipairs(player.bullets) do
@@ -92,6 +108,19 @@ end
 
 
 function love.draw()
+	-- background
+	if game_win then
+		love.graphics.print("You won the game!")
+		return
+	end
+
+	if game_over then
+		love.graphics.print("Game Over!")
+		return
+	end
+
+	love.graphics.draw(background_image)
+
 	-- Player
 	love.graphics.setColor(0, 0, 255)
 	love.graphics.rectangle("fill", player.x, player.y, player.width, player.height)
